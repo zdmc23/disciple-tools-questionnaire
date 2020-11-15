@@ -4,9 +4,9 @@
  */
 
 
-class DT_Starter_Plugin_Endpoints
+class DT_Questionnaire_Plugin_Endpoints
 {
-    public $permissions = [ 'view_any_contacts', 'view_project_metrics' ];
+    public $permissions = [ 'access_contacts', 'access_groups' ];
 
     private static $_instance = null;
     public static function instance() {
@@ -33,27 +33,83 @@ class DT_Starter_Plugin_Endpoints
 
     //See https://github.com/DiscipleTools/disciple-tools-theme/wiki/Site-to-Site-Link for outside of wordpress authentication
     public function add_api_routes() {
-        $namespace = 'dt_starter_plugin/v1';
+        $namespace = 'dt-questionnaire/v1';
 
         register_rest_route(
-            $namespace, '/endpoint', [
-                [
-                    'methods'  => WP_REST_Server::CREATABLE,
-                    'callback' => [ $this, 'private_endpoint' ],
-                ],
+            $namespace, "download", [
+                "methods"  => "GET",
+                "callback" => [ $this, "download_endpoint" ]
+            ]
+        );
+
+        register_rest_route(
+            $namespace, "questionnaires/(?P<id>\d+)", [
+                "methods"  => "GET",
+                "callback" => [ $this, "questionnaire_endpoint" ]
+            ]
+        );
+
+        register_rest_route(
+            $namespace, "questionnaires", [
+                "methods" => "GET",
+                "callback" => [ $this, "questionnaires_endpoint" ]
+            ]
+        );
+
+        register_rest_route(
+            $namespace, "submit", [
+                "methods"  => "POST",
+                "callback" => [ $this, "submit_endpoint" ]
             ]
         );
     }
 
-
-    public function private_endpoint( WP_REST_Request $request ) {
-        if ( !$this->has_permission() ){
-            return new WP_Error( "private_endpoint", "Missing Permissions", [ 'status' => 400 ] );
+    public function download_endpoint( WP_REST_Request $request ) {
+        if ( !$this->has_permission() ) {
+            return new WP_Error( __FUNCTION__, "You do not have permission for this", [ 'status' => 403 ] );
         }
+        $since = null;
+        if ( isset( $request['since'] ) ) {
+          $since = $request['since'];
+        }
+        return DT_Questionnaire_Plugin::get_instance()->get_questionnaire_responses_since( $since );
+    }
 
-        // run your function here
+    public function questionnaire_endpoint( WP_REST_Request $request ) {
+        if ( !$this->has_permission() ) {
+            return new WP_Error( __FUNCTION__, "You do not have permission for this", [ 'status' => 403 ] );
+        }
+        $params = $request->get_params();
+        if (! isset( $params['id'] ) ) {
+            return new WP_Error( __FUNCTION__, "Unable to process questionnaire request", [ 'status' => 500 ] );
+        }
+        return DT_Questionnaire_Plugin::get_instance()->get_questionnaire_by_id( $params['id'] );
+    }
 
-        return true;
+    public function questionnaires_endpoint( WP_REST_Request $request ) {
+        if ( !$this->has_permission() ) {
+            return new WP_Error( __FUNCTION__, "You do not have permission for this", [ 'status' => 403 ] );
+        }
+        $include_inactive = FALSE;
+        if (isset($request['inactive']) && is_bool($request['inactive'])) {
+            $include_inactive = $request['inactive'];
+        }
+        return DT_Questionnaire_Plugin::get_instance()->get_questionnaires($include_inactive);
+    }
+
+    public function submit_endpoint( WP_REST_Request $request ) {
+        if ( !$this->has_permission() ) {
+            return new WP_Error( __FUNCTION__, "You do not have permission for this", [ 'status' => 403 ] );
+        }
+        $params = $request->get_params();
+        if ( !isset( $params['fields'] ) ) {
+            return new WP_Error( __FUNCTION__, "missing fields param", [ 'status' => 401 ] );
+        }
+        $fields = $params['fields'];
+        return DT_Questionnaire_Plugin::get_instance()->submit_questionnaire_response( $fields );
     }
 }
-DT_Starter_Plugin_Endpoints::instance();
+/**
+ * Initialize instance
+ */
+DT_Questionnaire_Plugin_Endpoints::instance();

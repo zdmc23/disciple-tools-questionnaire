@@ -1,12 +1,11 @@
 <?php
 /**
- * Plugin Name: Disciple Tools - Starter Plugin
- * Plugin URI: https://github.com/DiscipleTools/disciple-tools-starter-plugin
- * Description: Disciple Tools - Starter Plugin is intended to help developers and integrator jumpstart their extension
- * of the Disciple Tools system.
- * Version:  0.1.0
- * Author URI: https://github.com/DiscipleTools
- * GitHub Plugin URI: https://github.com/DiscipleTools/disciple-tools-starter-plugin
+ * Plugin Name: Disciple Tools - Questionnaire
+ * Plugin URI: https://github.com/zdmc23/disciple-tools-questionnaire
+ * Description: Disciple Tools - Questionnaire Plugin is intended to enable survey forms triggered via an event (i.e., Contact/Group Meeting Completed) or on a schedule 
+ * Version:  0.3.0
+ * Author URI: https://github.com/zdmc23
+ * GitHub Plugin URI: https://github.com/zdmc23/disciple-tools-questionnaire
  * Requires at least: 4.7.0
  * (Requires 4.7+ because of the integration of the REST API at 4.7 and the security requirements of this milestone version.)
  * Tested up to: 5.4
@@ -17,48 +16,20 @@
  *          https://www.gnu.org/licenses/gpl-2.0.html
  */
 
-/*******************************************************************
- * Using the Starter Plugin
- * The Disciple Tools starter plugin is intended to accelerate integrations and extensions to the Disciple Tools system.
- * This basic plugin starter has some of the basic elements to quickly launch and extension project in the pattern of
- * the Disciple Tools system.
- */
-
-/**
- * Refactoring (renaming) this plugin as your own:
- * 1. @todo Refactor all occurrences of the name DT_Starter, dt_starter, dt-starter, starter-plugin, starter-plugin-template, starter_post_type, and Starter Plugin
- * 2. @todo Rename the `disciple-tools-starter-plugin.php and menu-and-tabs.php files.
- * 3. @todo Update the README.md and LICENSE
- * 4. @todo Update the default.pot file if you intend to make your plugin multilingual. Use a tool like POEdit
- * 5. @todo Change the translation domain to in the phpcs.xml your plugin's domain: @todo
- * 6. @todo Replace the 'sample' namespace in this and the rest-api.php files
- */
-
-/**
- * The starter plugin is equipped with:
- * 1. Wordpress style requirements
- * 2. Travis Continuous Integration
- * 3. Disciple Tools Theme presence check
- * 4. Remote upgrade system for ongoing updates outside the Wordpress Directory
- * 5. Multilingual ready
- * 6. PHP Code Sniffer support (composer) @use /vendor/bin/phpcs and /vendor/bin/phpcbf
- * 7. Starter Admin menu and options page with tabs.
- */
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-$dt_starter_required_dt_theme_version = '0.28.0';
+$dt_questionnaire_required_dt_theme_version = '0.28.0';
 
 /**
- * Gets the instance of the `DT_Starter_Plugin` class.
+ * Gets the instance of the `DT_Questionnaire_Plugin` class.
  *
  * @since  0.1
  * @access public
  * @return object|bool
  */
-function dt_starter_plugin() {
-    global $dt_starter_required_dt_theme_version;
+function dt_questionnaire_plugin() {
+    global $dt_questionnaire_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $version = $wp_theme->version;
 
@@ -66,8 +37,8 @@ function dt_starter_plugin() {
      * Check if the Disciple.Tools theme is loaded and is the latest required version
      */
     $is_theme_dt = strpos( $wp_theme->get_template(), "disciple-tools-theme" ) !== false || $wp_theme->name === "Disciple Tools";
-    if ( $is_theme_dt && version_compare( $version, $dt_starter_required_dt_theme_version, "<" ) ) {
-        add_action( 'admin_notices', 'dt_starter_plugin_hook_admin_notice' );
+    if ( $is_theme_dt && version_compare( $version, $dt_questionnaire_required_dt_theme_version, "<" ) ) {
+        add_action( 'admin_notices', 'dt_questionnaire_plugin_hook_admin_notice' );
         add_action( 'wp_ajax_dismissed_notice_handler', 'dt_hook_ajax_notice_handler' );
         return false;
     }
@@ -81,23 +52,20 @@ function dt_starter_plugin() {
         require_once get_template_directory() . '/dt-core/global-functions.php';
     }
     /*
-     * Don't load the plugin on every rest request. Only those with the 'sample' namespace
+     * Don't load the plugin on every rest request. Only those with the 'questionnaire' namespace
      */
     $is_rest = dt_is_rest();
-    //@todo change 'sample' if you want the plugin to be set up when using rest api calls other than ones with the 'sample' namespace
     if ( ! $is_rest ){
-        return DT_Starter_Plugin::get_instance();
+        return DT_Questionnaire_Plugin::get_instance();
     }
-    // @todo remove this "else if", if not using rest-api.php
-    else if ( strpos( dt_get_url_path(), 'dt_starter_plugin' ) !== false ) {
-        return DT_Starter_Plugin::get_instance();
+    else if ( strpos( dt_get_url_path(), 'dt_questionnaire_plugin' ) !== false ) {
+        return DT_Questionnaire_Plugin::get_instance();
     }
-    // @todo remove if not using a post type
-    else if ( strpos( dt_get_url_path(), 'starter_post_type' ) !== false) {
-        return DT_Starter_Plugin::get_instance();
+    else if ( strpos( dt_get_url_path(), 'questionnaire_post_type' ) !== false) {
+        return DT_Questionnaire_Plugin::get_instance();
     }
 }
-add_action( 'after_setup_theme', 'dt_starter_plugin' );
+add_action( 'after_setup_theme', 'dt_questionnaire_plugin' );
 
 /**
  * Singleton class for setting up the plugin.
@@ -105,7 +73,7 @@ add_action( 'after_setup_theme', 'dt_starter_plugin' );
  * @since  0.1
  * @access public
  */
-class DT_Starter_Plugin {
+class DT_Questionnaire_Plugin {
 
     /**
      * Declares public variables
@@ -133,7 +101,7 @@ class DT_Starter_Plugin {
         static $instance = null;
 
         if ( is_null( $instance ) ) {
-            $instance = new dt_starter_plugin();
+            $instance = new dt_questionnaire_plugin();
             $instance->setup();
             $instance->includes();
             $instance->setup_actions();
@@ -184,19 +152,14 @@ class DT_Starter_Plugin {
         $this->img_uri      = trailingslashit( $this->dir_uri . 'img' );
 
         // Admin and settings variables
-        $this->token             = 'dt_starter_plugin';
-        $this->version             = '0.1';
-
-
+        $this->token             = 'dt_questionnaire_plugin';
+        $this->version             = '0.3.0';
 
         // sample rest api class
         require_once( 'includes/rest-api.php' );
 
         // sample post type class
         require_once( 'includes/post-type.php' );
-
-        // custom site to site links
-        require_once( 'includes/custom-site-to-site-links.php' );
 
     }
 
@@ -218,24 +181,14 @@ class DT_Starter_Plugin {
              * Below is the publicly hosted .json file that carries the version information. This file can be hosted
              * anywhere as long as it is publicly accessible. You can download the version file listed below and use it as
              * a template.
-             * Also, see the instructions for version updating to understand the steps involved.
-             * @see https://github.com/DiscipleTools/disciple-tools-version-control/wiki/How-to-Update-the-Starter-Plugin
-             * @todo enable this section with your own hosted file
-             * @todo An example of this file can be found in /includes/admin/disciple-tools-starter-plugin-version-control.json
-             * @todo It is recommended to host this version control file outside the project itself. Github is a good option for delivering static json.
              */
 
-            /***** @todo remove from here
-
-            $hosted_json = "https://raw.githubusercontent.com/DiscipleTools/disciple-tools-starter-plugin-template/master/includes/admin/version-control.json"; // @todo change this url
+            $hosted_json = "https://raw.githubusercontent.com/zdmc23/disciple-tools-questionnaire/master/includes/admin/version-control.json";
             Puc_v4_Factory::buildUpdateChecker(
                 $hosted_json,
                 __FILE__,
-                'disciple-tools-starter-plugin'
+                'disciple-tools-questionnaire'
             );
-
-            ********* @todo to here */
-
         }
 
         // Internationalize the text strings used.
@@ -296,7 +249,7 @@ class DT_Starter_Plugin {
      * @return void
      */
     public static function deactivation() {
-        delete_option( 'dismissed-dt-starter' );
+        delete_option( 'dismissed-dt-questionnaire' );
     }
 
     /**
@@ -307,7 +260,7 @@ class DT_Starter_Plugin {
      * @return void
      */
     public function i18n() {
-        load_plugin_textdomain( 'dt_starter_plugin', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
+        load_plugin_textdomain( 'dt_questionnaire_plugin', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ). 'languages' );
     }
 
     /**
@@ -318,7 +271,7 @@ class DT_Starter_Plugin {
      * @return string
      */
     public function __toString() {
-        return 'dt_starter_plugin';
+        return 'dt_questionnaire_plugin';
     }
 
     /**
@@ -353,7 +306,7 @@ class DT_Starter_Plugin {
      * @access public
      */
     public function __call( $method = '', $args = array() ) {
-        _doing_it_wrong( "dt_starter_plugin::" . esc_html( $method ), 'Method does not exist.', '0.1' );
+        _doing_it_wrong( "dt_questionnaire_plugin::" . esc_html( $method ), 'Method does not exist.', '0.1' );
         unset( $method, $args );
         return null;
     }
@@ -361,30 +314,30 @@ class DT_Starter_Plugin {
 // end main plugin class
 
 // Register activation hook.
-register_activation_hook( __FILE__, [ 'DT_Starter_Plugin', 'activation' ] );
-register_deactivation_hook( __FILE__, [ 'DT_Starter_Plugin', 'deactivation' ] );
+register_activation_hook( __FILE__, [ 'DT_Questionnaire_Plugin', 'activation' ] );
+register_deactivation_hook( __FILE__, [ 'DT_Questionnaire_Plugin', 'deactivation' ] );
 
-function dt_starter_plugin_hook_admin_notice() {
-    global $dt_starter_required_dt_theme_version;
+function dt_questionnaire_plugin_hook_admin_notice() {
+    global $dt_questionnaire_required_dt_theme_version;
     $wp_theme = wp_get_theme();
     $current_version = $wp_theme->version;
-    $message = __( "'Disciple Tools - Starter Plugin' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.", "dt_starter_plugin" );
+    $message = __( "'Disciple Tools - Questionnaire Plugin' plugin requires 'Disciple Tools' theme to work. Please activate 'Disciple Tools' theme or make sure it is latest version.", "dt_questionnaire_plugin" );
     if ( $wp_theme->get_template() === "disciple-tools-theme" ){
-        $message .= sprintf( esc_html__( 'Current Disciple Tools version: %1$s, required version: %2$s', 'dt_starter_plugin' ), esc_html( $current_version ), esc_html( $dt_starter_required_dt_theme_version ) );
+        $message .= sprintf( esc_html__( 'Current Disciple Tools version: %1$s, required version: %2$s', 'dt_questionnaire_plugin' ), esc_html( $current_version ), esc_html( $dt_questionnaire_required_dt_theme_version ) );
     }
     // Check if it's been dismissed...
-    if ( ! get_option( 'dismissed-dt-starter', false ) ) { ?>
-        <div class="notice notice-error notice-dt-starter is-dismissible" data-notice="dt-starter">
+    if ( ! get_option( 'dismissed-dt-questionnaire', false ) ) { ?>
+        <div class="notice notice-error notice-dt-questionnaire is-dismissible" data-notice="dt-questionnaire">
             <p><?php echo esc_html( $message );?></p>
         </div>
         <script>
             jQuery(function($) {
-                $( document ).on( 'click', '.notice-dt-starter .notice-dismiss', function () {
+                $( document ).on( 'click', '.notice-dt-questionnaire .notice-dismiss', function () {
                     $.ajax( ajaxurl, {
                         type: 'POST',
                         data: {
                             action: 'dismissed_notice_handler',
-                            type: 'dt-starter',
+                            type: 'dt-questionnaire',
                             security: '<?php echo esc_html( wp_create_nonce( 'wp_rest_dismiss' ) ) ?>'
                         }
                     })

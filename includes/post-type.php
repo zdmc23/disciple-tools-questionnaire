@@ -1,11 +1,11 @@
 <?php
 
-class DT_Starter_Post_Type {
+class DT_Questionnaire_Post_Type {
 
     // Setup post type naming
-    public $post_type = 'starter_post_type';
-    public $single = 'Starter';
-    public $plural = 'Starters';
+    public $post_type = 'questions_post_type';
+    public $single = 'Questionnaire';
+    public $plural = 'Questionnaires';
 
     private static $_instance = null;
     public static function instance() {
@@ -17,7 +17,7 @@ class DT_Starter_Post_Type {
 
     public function __construct() {
 
-        add_action( 'after_setup_theme', [ $this, 'after_setup_theme' ], 100 );
+        //add_action( 'after_setup_theme', [ $this, 'after_setup_theme' ], 100 );
         add_action( 'p2p_init', [ $this, 'p2p_init' ] );
         add_action( 'dt_details_additional_section', [ $this, 'dt_details_additional_section' ], 10, 2 );
         add_action( 'dt_modal_help_text', [ $this, 'modal_help_text' ], 10 );
@@ -32,11 +32,13 @@ class DT_Starter_Post_Type {
 
     }
 
+    /*
     public function after_setup_theme(){
         if ( class_exists( 'Disciple_Tools_Post_Type_Template' )) {
             new Disciple_Tools_Post_Type_Template( $this->post_type, ucwords( $this->single ), ucwords( $this->plural ) );
         }
     }
+    */
 
     public function register_post_type( $post_types ) {
         $post_types[] = $this->post_type;
@@ -98,6 +100,7 @@ class DT_Starter_Post_Type {
                 'default' => '',
                 'show_in_table' => true
             ];
+            /*
             $fields['parents'] = [
                 'name' => "Parents",
                 'type' => 'connection',
@@ -112,6 +115,7 @@ class DT_Starter_Post_Type {
                 "p2p_direction" => "to",
                 "p2p_key" => $this->post_type . '_to_' . $this->post_type,
             ];
+            */
             $fields['contacts'] = [
                 'name' => "Contacts",
                 'type' => 'connection',
@@ -126,6 +130,7 @@ class DT_Starter_Post_Type {
                 "p2p_direction" => "from",
                 "p2p_key" => $this->post_type . "_to_groups",
             ];
+            /*
             $fields["people_groups"] = [
                 "name" => __( 'People Groups', 'disciple_tools' ),
                 'description' => _x( 'The people groups represented by this group.', 'Optional Documentation', 'disciple_tools' ),
@@ -134,7 +139,7 @@ class DT_Starter_Post_Type {
                 "p2p_direction" => "from",
                 "p2p_key" => $this->post_type . "_to_peoplegroups"
             ];
-
+            */
         }
         if ( $post_type === 'groups' ){
             $fields[$this->post_type] = [
@@ -170,6 +175,7 @@ class DT_Starter_Post_Type {
             'to' => 'groups'
         ]);
 
+        /*
         p2p_register_connection_type([
             'name' => $this->post_type . '_to_' . $this->post_type,
             'from' => $this->post_type,
@@ -180,6 +186,7 @@ class DT_Starter_Post_Type {
             'from' => $this->post_type,
             'to' => 'peoplegroups'
         ]);
+        */
     }
 
     public function dt_details_additional_section_ids( $sections, $post_type = "" ){
@@ -452,4 +459,4 @@ class DT_Starter_Post_Type {
         return $fields;
     }
 }
-DT_Starter_Post_Type::instance();
+DT_Questionnaire_Post_Type::instance();
