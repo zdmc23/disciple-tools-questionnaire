@@ -1,4 +1,4 @@
-![Questionnaire banner](/assets/banner-772x250.png)
+![Questionnaire banner](/assets/banner-772x250.jpg)
 # Disciple Tools - Questionnaire Plugin 
 The Disciple Tools - Questionnaire Plugin is intended to enable survey forms triggered via an event (i.e., Contact/Group Meeting Completed) or on a schedule 
 
